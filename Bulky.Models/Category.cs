@@ -5,7 +5,8 @@ namespace Bulky.Models;
 
 public class Category : IValidatableObject
 {
-    [Key] public int Id { get; set; }
+    [Key] 
+    public int Id { get; set; }
 
     [Required]
     [DisplayName("Category Name")]
