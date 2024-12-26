@@ -10,6 +10,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+    public DbSet<Company> Companies { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
         : base(options) 
@@ -112,6 +113,28 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
                     CategoryId = 3,
                     ImageUrl = ""
                 }
+        });
+        
+        modelBuilder.Entity<Company>().HasData(new List<Company>()
+        {
+            new Company() { 
+                    Id = 1, 
+                    Name = "Belaz", 
+                    StreetAddress="Pushkina str", 
+                    City= "Minsk",
+                    State="Minsk",
+                    PostalCode= "22015",
+                    PhoneNumber= "375290191823"
+                },
+            new Company() { 
+                Id = 2, 
+                Name = "Maz", 
+                StreetAddress="Pushkina str", 
+                City= "Gomel",
+                State="Gomel",
+                PostalCode= "22033",
+                PhoneNumber= "375290111426"
+            }
         });
     }
 }

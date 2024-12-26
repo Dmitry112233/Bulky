@@ -9,11 +9,14 @@ public class UnitOfWork : IUnitOfWork
     public ICategoryRepository Category { get; }
     public IProductRepository Product { get; }
     
+    public ICompanyRepository Company { get; }
+
     public UnitOfWork(ApplicationDbContext db)
     {
         _db = db;
         Category = new CategoryRepository(db);
         Product = new ProductRepository(db);
+        Company = new CompanyRepository(db);
     }
     
     public void Save()
