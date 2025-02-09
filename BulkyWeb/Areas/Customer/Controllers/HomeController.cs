@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BulkyWeb.Areas.Customer.Controllers;
@@ -19,14 +21,53 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        var productList = _unitOfWork.Product.GetAll("Category").ToList();
+        var productList = _unitOfWork.Product.GetAll(includeProperties:"Category").ToList();
         return View(productList);
     }
     
     public IActionResult Details(int productId)
     {
-        var product = _unitOfWork.Product.Get(u => u.Id == productId, "Category");
-        return View(product);
+        ShoppingCart cart = new ShoppingCart()
+        {
+            Product = _unitOfWork.Product.Get(u => u.Id == productId, "Category"),
+            Count = 1,
+            ProductId = productId
+        };
+        
+        return View(cart);
+    }
+    
+    [HttpPost]
+    [Authorize]
+    public IActionResult Details(ShoppingCart shoppingCart)
+    {
+        if (ModelState.IsValid)
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+            shoppingCart.ApplicationUserId = userId;
+
+            var shoppingCartInDb = _unitOfWork.ShoppingCart
+                .Get(u => u.ProductId == shoppingCart.ProductId && u.ApplicationUserId == userId);
+
+            if (shoppingCartInDb == null)
+            {
+                _unitOfWork.ShoppingCart.Add(shoppingCart);
+            }
+            else
+            {
+                shoppingCartInDb.Count += shoppingCart.Count;
+                _unitOfWork.ShoppingCart.Update(shoppingCartInDb);
+            }
+
+            TempData["success"] = "Cart updated successfully";
+
+            _unitOfWork.Save();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View();
     }
 
     public IActionResult Privacy()
