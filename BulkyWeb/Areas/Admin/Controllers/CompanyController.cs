@@ -1,11 +1,13 @@
 using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
+using Bulky.Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BulkyWeb.Areas.Admin.Controllers;
 
 [Area("Admin")]
-//[Authorize(Roles = Sd.RoleAdmin)]
+[Authorize(Roles = Sd.RoleAdmin)]
 public class CompanyController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;

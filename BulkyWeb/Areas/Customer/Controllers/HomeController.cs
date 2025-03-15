@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
+using Bulky.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,15 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
+        var claimsIdentity = (ClaimsIdentity)User.Identity;
+        var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (claim != null)
+        {
+            HttpContext.Session.SetInt32(Sd.SessionCart, _unitOfWork.ShoppingCart
+                .GetAll(u => u.ApplicationUserId == claim.Value).Count());
+        }
+        
         var productList = _unitOfWork.Product.GetAll(includeProperties:"Category").ToList();
         return View(productList);
     }
@@ -53,16 +63,18 @@ public class HomeController : Controller
             if (shoppingCartInDb == null)
             {
                 _unitOfWork.ShoppingCart.Add(shoppingCart);
+                _unitOfWork.Save();
+                HttpContext.Session.SetInt32(Sd.SessionCart, _unitOfWork.ShoppingCart
+                    .GetAll(u => u.ApplicationUserId == userId).Count());
             }
             else
             {
                 shoppingCartInDb.Count += shoppingCart.Count;
                 _unitOfWork.ShoppingCart.Update(shoppingCartInDb);
+                _unitOfWork.Save();
             }
 
             TempData["success"] = "Cart updated successfully";
-
-            _unitOfWork.Save();
 
             return RedirectToAction(nameof(Index));
         }

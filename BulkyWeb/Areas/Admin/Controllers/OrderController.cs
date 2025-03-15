@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using Stripe.Checkout;
-using Stripe.Climate;
 
 namespace BulkyWeb.Areas.Admin.Controllers;
 

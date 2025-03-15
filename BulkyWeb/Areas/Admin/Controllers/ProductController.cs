@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace BulkyWeb.Areas.Admin.Controllers;
 
 [Area("Admin")]
-//[Authorize(Roles = Sd.RoleAdmin)]
+[Authorize(Roles = Sd.RoleAdmin)]
 public class ProductController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -45,11 +45,11 @@ public class ProductController : Controller
             return Json(new {success = false, message = "Error while deleting"});
         }
         
-        var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, productToDelete.ImageUrl.TrimStart(Path.DirectorySeparatorChar));
-        if (System.IO.File.Exists(oldImagePath))
-        {
-            System.IO.File.Delete(oldImagePath);
-        }
+        // var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, productToDelete.ImageUrl.TrimStart(Path.DirectorySeparatorChar));
+        // if (System.IO.File.Exists(oldImagePath))
+        // {
+        //     System.IO.File.Delete(oldImagePath);
+        // }
         
         _unitOfWork.Product.Remove(productToDelete);
         _unitOfWork.Save();
@@ -93,21 +93,21 @@ public class ProductController : Controller
                 var fullImagePath = Path.Combine(rootPath, productFolder);
                 var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
 
-                if (!string.IsNullOrEmpty(productVm.Product.ImageUrl))
-                {
-                    var oldImagePath = Path.Combine(rootPath, productVm.Product.ImageUrl.TrimStart(Path.DirectorySeparatorChar));
-                    if (System.IO.File.Exists(oldImagePath))
-                    {
-                        System.IO.File.Delete(oldImagePath);
-                    }
-                }
-                
-                using (var fileStream = new FileStream(Path.Combine(fullImagePath, fileName), FileMode.Create))
-                {
-                    file.CopyTo(fileStream);
-                }
-
-                productVm.Product.ImageUrl = Path.Combine(Path.DirectorySeparatorChar + productFolder, fileName);
+                // if (!string.IsNullOrEmpty(productVm.Product.ImageUrl))
+                // {
+                //     var oldImagePath = Path.Combine(rootPath, productVm.Product.ImageUrl.TrimStart(Path.DirectorySeparatorChar));
+                //     if (System.IO.File.Exists(oldImagePath))
+                //     {
+                //         System.IO.File.Delete(oldImagePath);
+                //     }
+                // }
+                //
+                // using (var fileStream = new FileStream(Path.Combine(fullImagePath, fileName), FileMode.Create))
+                // {
+                //     file.CopyTo(fileStream);
+                // }
+                //
+                // productVm.Product.ImageUrl = Path.Combine(Path.DirectorySeparatorChar + productFolder, fileName);
             }
 
             if (productVm.Product.Id == 0)

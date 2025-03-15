@@ -46,6 +46,4 @@ public class Product
     [ValidateNever]
     public Category Category { get; set; }
     
-    [ValidateNever]
-    public string ImageUrl { get; set; }
 }

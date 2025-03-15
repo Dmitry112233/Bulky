@@ -5,6 +5,14 @@
     <div class="card-header bg-secondary bg-gradient ml-0 pt-4">
         <div class="row">
             <div class="col-12 text-center">
+                @if (User.IsInRole(Sd.RoleAdmin) || User.IsInRole(Sd.RoleEmployee))
+                {
+                    <h2 class="py-2 text-white">Register - Admin Portal</h2>
+                }
+                else
+                {
+                    <h2 class="py-2 text-white">Register</h2>
+                }
                 <h2 class="py-2 text-white">Register</h2>
             </div>
         </div>
@@ -60,16 +68,19 @@
                         <label asp-for="Input.PostalCode" class="ms-2 text-muted">Postal Code</label>
                         <span asp-validation-for="Input.PostalCode" class="text-danger"></span>
                     </div>
-                    <div class="form-floating mb-3 col-md-6">
-                        <select asp-for="Input.Role" asp-items="@Model.Input.Roles" class="form-select">
-                            <option disabled selected>--Select Role--</option>
-                        </select>
-                    </div>
-                    <div class="form-floating mb-3 col-md-6">
-                        <select asp-for="Input.CompanyId" asp-items="@Model.Input.CompanyList" class="form-select" style="display: none;">
-                            <option disabled selected>--Select Company--</option>
-                        </select>
-                    </div>
+                    @if (User.IsInRole(Sd.RoleAdmin) || User.IsInRole(Sd.RoleEmployee))
+                    {
+                        <div class="form-floating mb-3 col-md-6">
+                            <select asp-for="Input.Role" asp-items="@Model.Input.Roles" class="form-select">
+                                <option disabled selected>--Select Role--</option>
+                            </select>
+                        </div>
+                        <div class="form-floating mb-3 col-md-6">
+                            <select asp-for="Input.CompanyId" asp-items="@Model.Input.CompanyList" class="form-select" style="display: none;">
+                                <option disabled selected>--Select Company--</option>
+                            </select>
+                        </div>
+                    }
                     <div class="col-12">
                         <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
                     </div>
