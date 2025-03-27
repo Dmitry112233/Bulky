@@ -31,7 +31,7 @@ public class HomeController : Controller
                 .GetAll(u => u.ApplicationUserId == claim.Value).Count());
         }
         
-        var productList = _unitOfWork.Product.GetAll(includeProperties:"Category").ToList();
+        var productList = _unitOfWork.Product.GetAll(includeProperties:"Category,ProductImages").ToList();
         return View(productList);
     }
     
@@ -39,7 +39,7 @@ public class HomeController : Controller
     {
         ShoppingCart cart = new ShoppingCart()
         {
-            Product = _unitOfWork.Product.Get(u => u.Id == productId, "Category"),
+            Product = _unitOfWork.Product.Get(u => u.Id == productId, "Category,ProductImages"),
             Count = 1,
             ProductId = productId
         };

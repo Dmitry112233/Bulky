@@ -45,11 +45,18 @@ public class ProductController : Controller
             return Json(new {success = false, message = "Error while deleting"});
         }
         
-        // var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, productToDelete.ImageUrl.TrimStart(Path.DirectorySeparatorChar));
-        // if (System.IO.File.Exists(oldImagePath))
-        // {
-        //     System.IO.File.Delete(oldImagePath);
-        // }
+        string productPath = @"images/products/product-" + id;
+        var finalPath = Path.Combine(_webHostEnvironment.WebRootPath, productPath);
+
+        if (Directory.Exists(finalPath))
+        {
+            string[] files = Directory.GetFiles(finalPath);
+            foreach (var file in files)
+            {
+                System.IO.File.Delete(file);
+            }
+            Directory.Delete(finalPath);
+        }
         
         _unitOfWork.Product.Remove(productToDelete);
         _unitOfWork.Save();
@@ -76,40 +83,16 @@ public class ProductController : Controller
         }
         else
         {
-            productVM.Product = _unitOfWork.Product.Get(u => u.Id == id);
+            productVM.Product = _unitOfWork.Product.Get(u => u.Id == id, includeProperties: "ProductImages");
             return View(productVM);
         }
     }
     
     [HttpPost]
-    public IActionResult Upsert(ProductVM productVm, IFormFile? file)
+    public IActionResult Upsert(ProductVM productVm, List<IFormFile> files)
     {
         if (ModelState.IsValid)
         {
-            if (file != null)
-            {
-                var rootPath = _webHostEnvironment.WebRootPath;
-                var productFolder = Path.Combine("images", "product");
-                var fullImagePath = Path.Combine(rootPath, productFolder);
-                var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-
-                // if (!string.IsNullOrEmpty(productVm.Product.ImageUrl))
-                // {
-                //     var oldImagePath = Path.Combine(rootPath, productVm.Product.ImageUrl.TrimStart(Path.DirectorySeparatorChar));
-                //     if (System.IO.File.Exists(oldImagePath))
-                //     {
-                //         System.IO.File.Delete(oldImagePath);
-                //     }
-                // }
-                //
-                // using (var fileStream = new FileStream(Path.Combine(fullImagePath, fileName), FileMode.Create))
-                // {
-                //     file.CopyTo(fileStream);
-                // }
-                //
-                // productVm.Product.ImageUrl = Path.Combine(Path.DirectorySeparatorChar + productFolder, fileName);
-            }
-
             if (productVm.Product.Id == 0)
             {
                 _unitOfWork.Product.Add(productVm.Product);
@@ -119,7 +102,47 @@ public class ProductController : Controller
                 _unitOfWork.Product.Update(productVm.Product);
             }
             _unitOfWork.Save();
-            TempData["success"] = "Product created successfully";
+            
+            if (files != null)
+            {
+                
+                var rootPath = _webHostEnvironment.WebRootPath;
+                
+                foreach (var file in files)
+                {
+                    var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                    string productPath = @"images/products/product-" + productVm.Product.Id;
+                    var finalPath = Path.Combine(rootPath, productPath);
+
+                    if (!Directory.Exists(finalPath))
+                    {
+                        Directory.CreateDirectory(finalPath);
+                    }
+                    
+                    using (var fileStream = new FileStream(Path.Combine(finalPath, fileName), FileMode.Create))
+                    {
+                        file.CopyTo(fileStream);
+                    }
+
+                    ProductImage productImage = new()
+                    {
+                        ImageUrl =  productPath + "/" + fileName,
+                        ProductId = productVm.Product.Id,
+                    };
+
+                    if (productVm.Product.ProductImages == null)
+                    {
+                        productVm.Product.ProductImages = new List<ProductImage> ();
+                    }
+                    
+                    productVm.Product.ProductImages.Add(productImage);
+                }
+                
+                _unitOfWork.Product.Update(productVm.Product);
+                _unitOfWork.Save();
+            }
+            
+            TempData["success"] = "Product created/updated successfully";
             return RedirectToAction("Index");
         }
         else
@@ -131,5 +154,29 @@ public class ProductController : Controller
             });
             return View(productVm);
         }
+    }
+
+    public IActionResult DeleteImage(int imageId)
+    {
+        var imageToBeDeleted = _unitOfWork.ProductImage.Get(u => u.Id == imageId);
+        var productId = imageToBeDeleted.ProductId;
+        if (imageToBeDeleted != null)
+        {
+            if (!string.IsNullOrEmpty(imageToBeDeleted.ImageUrl))
+            {
+                var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, imageToBeDeleted.ImageUrl.TrimStart(Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(oldImagePath))
+                {
+                    System.IO.File.Delete(oldImagePath);
+                }
+            }
+            
+            _unitOfWork.ProductImage.Remove(imageToBeDeleted);
+            _unitOfWork.Save();
+            
+            TempData["success"] = "Deleted successfully";
+        }
+
+        return RedirectToAction(nameof(Upsert), new { id = productId });
     }
 }

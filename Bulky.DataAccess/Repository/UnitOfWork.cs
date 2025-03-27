@@ -18,6 +18,8 @@ public class UnitOfWork : IUnitOfWork
     public IOrderHeaderRepository OrderHeader { get; }
     
     public IOrderDetailRepository OrderDetail { get; }
+    
+    public IProductImageRepository ProductImage { get; }
 
     public UnitOfWork(ApplicationDbContext db)
     {
@@ -29,6 +31,7 @@ public class UnitOfWork : IUnitOfWork
         ApplicationUser = new ApplicationUserRepository(db);
         OrderHeader = new OrderHeaderRepository(db);
         OrderDetail = new OrderDetailRepository(db);
+        ProductImage = new ProductImageRepository(db);
     }
     
     public void Save()
